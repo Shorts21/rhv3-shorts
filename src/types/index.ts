@@ -395,7 +395,13 @@ export interface MovimentacaoRequisicaoPessoal {
   recurso_cadeira?: boolean
   recurso_apoio_pes?: boolean
   recurso_epi_bota?: boolean
-  status: 'pendente' | 'aprovada' | 'rejeitada'
+  status: 'pendente' | 'em_correcao' | 'corrigida' | 'aprovada' | 'rejeitada'
+  aprovador_id?: string
+  aprovador_nome?: string
+  data_aprovacao?: string
+  comentario_aprovacao?: string
+  solicitacao_correcao?: string
+  data_correcao?: string
   created_at: string
   updated_at: string
 }
