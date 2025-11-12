@@ -118,7 +118,7 @@ export class AuthService {
   }
 
   isRH(): boolean {
-    return this.currentUser?.perfil === 'rh'
+    return this.currentUser?.perfil === 'rh' || this.currentUser?.perfil === 'bp_rh'
   }
 
   isSupervisor(): boolean {
@@ -130,11 +130,15 @@ export class AuthService {
   }
 
   canEvaluate(): boolean {
-    return this.currentUser?.perfil === 'rh' || this.currentUser?.perfil === 'supervisor' || this.currentUser?.perfil === 'bp_rh'
+    return ['rh', 'bp_rh', 'supervisor'].includes(this.currentUser?.perfil || '')
   }
 
   isAdmin(): boolean {
-    return this.currentUser?.perfil === 'rh' || this.currentUser?.perfil === 'bp_rh'
+    return ['rh', 'bp_rh'].includes(this.currentUser?.perfil || '')
+  }
+
+  hasFullAccess(): boolean {
+    return ['rh', 'bp_rh'].includes(this.currentUser?.perfil || '')
   }
 }
 
