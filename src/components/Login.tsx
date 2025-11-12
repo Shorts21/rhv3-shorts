@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { LogIn, User, Phone } from 'lucide-react'
 import { authService } from '../lib/auth'
@@ -16,6 +16,13 @@ export function Login({ onLogin }: LoginProps) {
   const [telefone, setTelefone] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const { settings } = useSystemSettings()
+
+  // Limpar sessão ao montar o componente de login
+  useEffect(() => {
+    console.log('🧹 Limpando sessão antiga no Login...')
+    localStorage.removeItem('luiza_user_session')
+    authService.logout()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,6 +43,7 @@ export function Login({ onLogin }: LoginProps) {
       }
 
       if (user) {
+        console.log('✅ Login bem-sucedido:', user)
         toast.success(`Bem-vindo(a), ${user.nome}!`)
         onLogin(user)
       }

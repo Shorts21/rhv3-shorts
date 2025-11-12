@@ -22,7 +22,13 @@ const queryClient = new QueryClient({
 })
 
 function App() {
-  const [currentUser, setCurrentUser] = useState<User | null>(authService.getCurrentUser())
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const user = authService.getCurrentUser()
+    if (user) {
+      console.log('🔄 Carregando sessão do localStorage:', user)
+    }
+    return user
+  })
   const [auditCompleted, setAuditCompleted] = useState(false)
 
   // Executar auditoria na inicialização
@@ -56,6 +62,7 @@ function App() {
   }, [])
 
   const handleLogin = (user: User) => {
+    console.log('🔐 Login realizado:', { nome: user.nome, perfil: user.perfil, id: user.id })
     setCurrentUser(user)
   }
 
@@ -71,6 +78,16 @@ function App() {
         <LoadingSpinner size="lg" text="Inicializando sistema Luiza HR..." />
       </div>
     )
+  }
+
+  // Debug: Log do usuário atual e qual componente será renderizado
+  if (currentUser) {
+    console.log('👤 Usuário atual:', currentUser.nome, '| Perfil:', currentUser.perfil)
+    if (currentUser.perfil === 'supervisor') {
+      console.log('🎯 Renderizando: SupervisorFlow')
+    } else if (currentUser.perfil === 'rh' || currentUser.perfil === 'bp_rh') {
+      console.log('🎯 Renderizando: UnifiedHRSystem (com sidebar)')
+    }
   }
 
   return (
