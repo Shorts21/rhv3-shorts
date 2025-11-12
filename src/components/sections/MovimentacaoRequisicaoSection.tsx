@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Save, X, FileText, ChevronDown, ChevronUp, Check, XCircle, Edit2, Trash2, AlertCircle, MessageSquare } from 'lucide-react'
+import { Plus, Save, X, FileText, ChevronDown, ChevronUp, Check, XCircle, Edit2, Trash2, AlertCircle, MessageSquare, Printer } from 'lucide-react'
 import { AnimatedCard } from '../AnimatedCard'
+import { MovimentacaoRequisicaoPrint } from '../MovimentacaoRequisicaoPrint'
 import toast from 'react-hot-toast'
 import { supabase } from '../../lib/supabase'
 import { MovimentacaoRequisicaoPessoal, MOTIVOS_MOVIMENTACAO, UNIDADES } from '../../types'
@@ -354,8 +355,18 @@ export function MovimentacaoRequisicaoSection() {
     return mov.requisitante_id === currentUser?.id && mov.status === 'em_correcao'
   }
 
+  const handlePrint = (mov: MovimentacaoRequisicaoPessoal) => {
+    setSelectedMovimentacao(mov)
+    setTimeout(() => {
+      window.print()
+    }, 100)
+  }
+
   return (
     <div className="space-y-6">
+      {selectedMovimentacao && (
+        <MovimentacaoRequisicaoPrint data={selectedMovimentacao} />
+      )}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Movimentação / Requisição de Pessoal</h2>
@@ -961,6 +972,16 @@ export function MovimentacaoRequisicaoSection() {
                       <XCircle className="w-5 h-5" />
                     </button>
                   </>
+                )}
+
+                {mov.status === 'aprovada' && (
+                  <button
+                    onClick={() => handlePrint(mov)}
+                    className="p-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors"
+                    title="Imprimir / Exportar PDF"
+                  >
+                    <Printer className="w-5 h-5" />
+                  </button>
                 )}
 
                 {canEditOrDelete(mov) && (
