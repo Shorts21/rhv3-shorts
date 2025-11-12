@@ -67,10 +67,10 @@ export function UnifiedHRSystem({ user, onLogout }: UnifiedHRSystemProps) {
         return <FeedbacksSection supervisorId={user.id} supervisorNome={user.nome} />
 
       case 'avaliar':
-        return <AvaliarSection supervisorId={user.id} supervisorNome={user.nome} isRH={user.perfil === 'rh'} />
+        return <AvaliarSection supervisorId={user.id} supervisorNome={user.nome} isRH={user.perfil === 'rh' || user.perfil === 'bp_rh'} />
 
       case 'avaliacao-experiencia':
-        return <AvaliacaoExperienciaSection userId={user.id} isRH={user.perfil === 'rh'} />
+        return <AvaliacaoExperienciaSection userId={user.id} isRH={user.perfil === 'rh' || user.perfil === 'bp_rh'} />
 
       case 'avaliacao-feedback':
         return <AvaliacaoFeedbackSection userId={user.id} />

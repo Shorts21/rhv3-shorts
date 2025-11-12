@@ -107,7 +107,7 @@ export function Sidebar({ user, activeSection, onSectionChange, onLogout }: Side
     }
   ]
 
-  const menuGroups = user.perfil === 'rh' ? rhMenuGroups : supervisorMenuGroups
+  const menuGroups = (user.perfil === 'rh' || user.perfil === 'bp_rh') ? rhMenuGroups : supervisorMenuGroups
 
   const toggleGroup = (groupTitle: string) => {
     setExpandedGroups(prev =>

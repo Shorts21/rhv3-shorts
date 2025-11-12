@@ -88,7 +88,7 @@ function App() {
               <Login onLogin={handleLogin} />
             </motion.div>
           )}
-          {(currentUser?.perfil === 'supervisor' || currentUser?.perfil === 'bp_rh') && (
+          {currentUser?.perfil === 'supervisor' && (
             <motion.div
               key="supervisor"
               initial={{ opacity: 0, x: 20 }}
@@ -99,7 +99,7 @@ function App() {
               <SupervisorFlow user={currentUser} onLogout={handleLogout} />
             </motion.div>
           )}
-          {currentUser?.perfil === 'rh' && (
+          {(currentUser?.perfil === 'rh' || currentUser?.perfil === 'bp_rh') && (
             <motion.div
               key="rh"
               initial={{ opacity: 0, x: 20 }}
