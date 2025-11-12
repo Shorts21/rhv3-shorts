@@ -64,7 +64,13 @@ export function MovimentacaoRequisicaoSection() {
     setLoading(true)
 
     try {
-      const user = JSON.parse(localStorage.getItem('currentUser') || '{}')
+      const userSession = localStorage.getItem('luiza_user_session')
+      if (!userSession) {
+        toast.error('Sessão não encontrada. Faça login novamente.')
+        return
+      }
+
+      const user = JSON.parse(userSession)
 
       const { error } = await supabase
         .from('movimentacao_requisicao_pessoal')
@@ -74,14 +80,20 @@ export function MovimentacaoRequisicaoSection() {
           requisitante_nome: user.nome
         })
 
-      if (error) throw error
+      if (error) {
+        console.error('Erro do Supabase:', error)
+        toast.error(`Erro ao salvar: ${error.message}`)
+        throw error
+      }
 
       toast.success('Movimentação/Requisição registrada com sucesso!')
       resetForm()
       loadMovimentacoes()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao salvar movimentação:', error)
-      toast.error('Erro ao salvar movimentação')
+      if (!error.message?.includes('Erro ao salvar:')) {
+        toast.error('Erro ao salvar movimentação. Verifique os campos.')
+      }
     } finally {
       setLoading(false)
     }
