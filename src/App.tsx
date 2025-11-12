@@ -67,8 +67,13 @@ function App() {
   }
 
   const handleLogout = () => {
+    console.log('🚪 Fazendo logout e limpando cache...')
     authService.logout()
     setCurrentUser(null)
+    // Forçar limpeza completa do cache e recarregar
+    setTimeout(() => {
+      window.location.reload()
+    }, 100)
   }
 
   // Mostrar loading durante auditoria inicial
