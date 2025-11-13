@@ -23,13 +23,20 @@ const queryClient = new QueryClient({
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
-    const user = authService.getCurrentUser()
-    if (user) {
-      console.log('🔄 Carregando sessão do localStorage:', user)
+    try {
+      const user = authService.getCurrentUser()
+      if (user) {
+        console.log('🔄 Carregando sessão do localStorage:', user)
+      }
+      return user
+    } catch (error) {
+      console.error('Erro ao carregar usuário:', error)
+      return null
     }
-    return user
   })
   const [auditCompleted, setAuditCompleted] = useState(false)
+
+  const [error, setError] = useState<string | null>(null)
 
   // Executar auditoria na inicialização
   useEffect(() => {
@@ -40,6 +47,7 @@ function App() {
         setAuditCompleted(true)
       } catch (error) {
         logger.error('Erro na auditoria inicial:', error)
+        setError('Erro ao inicializar sistema. Por favor, recarregue a página.')
         setAuditCompleted(true) // Continuar mesmo com erro
       }
     }
@@ -74,6 +82,25 @@ function App() {
     setTimeout(() => {
       window.location.reload()
     }, 100)
+  }
+
+  // Mostrar erro se houver
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-white">
+        <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Erro ao Carregar</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Recarregar Página
+          </button>
+        </div>
+      </div>
+    )
   }
 
   // Mostrar loading durante auditoria inicial
