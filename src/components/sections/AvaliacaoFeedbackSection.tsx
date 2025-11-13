@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Plus, Save, X, FileCheck } from 'lucide-react'
+import { Plus, Save, X, FileCheck, Edit2, Trash2 } from 'lucide-react'
 import { AnimatedCard } from '../AnimatedCard'
 import toast from 'react-hot-toast'
 import { supabase } from '../../lib/supabase'
 import { AvaliacaoDesempenhoFeedback, Colaborador, QUESTOES_FEEDBACK, FATORES_COMPETENCIA } from '../../types'
 import { logger } from '../../lib/logger'
+import { authService } from '../../lib/auth'
 
 interface AvaliacaoFeedbackSectionProps {
   userId: string
@@ -16,12 +17,25 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
   const [colaboradores, setColaboradores] = useState<Colaborador[]>([])
   const [avaliacoes, setAvaliacoes] = useState<AvaliacaoDesempenhoFeedback[]>([])
   const [loading, setLoading] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [currentUser, setCurrentUser] = useState<any>(null)
   const [formData, setFormData] = useState<Partial<AvaliacaoDesempenhoFeedback>>({
     colaborador_id: '',
     trimestre: 1,
     data_avaliacao: new Date().toISOString().split('T')[0],
     concordancia_colaborador: true
   })
+
+  useEffect(() => {
+    loadCurrentUser()
+  }, [])
+
+  const loadCurrentUser = async () => {
+    const user = await authService.getCurrentUser()
+    setCurrentUser(user)
+  }
+
+  const isBPRH = currentUser?.perfil === 'bp_rh'
 
   useEffect(() => {
     loadColaboradores()
@@ -144,18 +158,33 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
         }
       }
 
-      const { error } = await supabase
-        .from('avaliacoes_desempenho_feedback')
-        .insert({
-          ...formData,
-          avaliador_id: avaliadorColaboradorId,
-          total_pontos,
-          percentual_idi
-        })
+      if (editingId) {
+        const { error } = await supabase
+          .from('avaliacoes_desempenho_feedback')
+          .update({
+            ...formData,
+            avaliador_id: avaliadorColaboradorId,
+            total_pontos,
+            percentual_idi
+          })
+          .eq('id', editingId)
 
-      if (error) throw error
+        if (error) throw error
+        toast.success('Avaliação de desempenho atualizada com sucesso!')
+      } else {
+        const { error } = await supabase
+          .from('avaliacoes_desempenho_feedback')
+          .insert({
+            ...formData,
+            avaliador_id: avaliadorColaboradorId,
+            total_pontos,
+            percentual_idi
+          })
 
-      toast.success('Avaliação de desempenho registrada com sucesso!')
+        if (error) throw error
+        toast.success('Avaliação de desempenho registrada com sucesso!')
+      }
+
       resetForm()
       loadAvaliacoes()
     } catch (error) {
@@ -174,6 +203,33 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
       concordancia_colaborador: true
     })
     setShowForm(false)
+    setEditingId(null)
+  }
+
+  const handleEdit = (avaliacao: AvaliacaoDesempenhoFeedback) => {
+    setFormData(avaliacao)
+    setEditingId(avaliacao.id)
+    setShowForm(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta avaliação?')) return
+
+    try {
+      const { error } = await supabase
+        .from('avaliacoes_desempenho_feedback')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
+      toast.success('Avaliação excluída com sucesso!')
+      loadAvaliacoes()
+    } catch (error) {
+      console.error('Erro ao excluir avaliação:', error)
+      toast.error('Erro ao excluir avaliação')
+    }
   }
 
   const handleNotaChange = (campo: string, valor: number) => {
@@ -215,7 +271,9 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
       {showForm && (
         <AnimatedCard className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Ficha de Avaliação de Desempenho</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {editingId ? 'Editar Avaliação de Desempenho' : 'Ficha de Avaliação de Desempenho'}
+            </h3>
             <button
               onClick={resetForm}
               className="text-gray-400 hover:text-gray-600"
@@ -367,7 +425,7 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
                 className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors flex items-center disabled:opacity-50"
               >
                 <Save className="w-5 h-5 mr-2" />
-                {loading ? 'Salvando...' : 'Salvar Avaliação'}
+                {loading ? 'Salvando...' : editingId ? 'Atualizar Avaliação' : 'Salvar Avaliação'}
               </button>
               <button
                 type="button"
@@ -425,6 +483,25 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
                     )}
                   </div>
                 </div>
+
+                {isBPRH && (
+                  <div className="flex gap-2 ml-4">
+                    <button
+                      onClick={() => handleEdit(avaliacao)}
+                      className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                      title="Editar"
+                    >
+                      <Edit2 className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(avaliacao.id)}
+                      className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+                      title="Excluir"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
               </div>
             </AnimatedCard>
           )
