@@ -357,8 +357,37 @@ export function MovimentacaoRequisicaoSection() {
 
   const handlePrint = (mov: MovimentacaoRequisicaoPessoal) => {
     setSelectedMovimentacao(mov)
+
     setTimeout(() => {
+      // Salvar título original
+      const originalTitle = document.title
+
+      // Gerar código da requisição baseado no ID
+      const codigo = `SGPFR-GEG${mov.id.substring(0, 8).toUpperCase()}MP`
+
+      // Formatar nome do colaborador (remover espaços e caracteres especiais)
+      const nomeColaborador = (mov.nome_colaborador || mov.desligamento_nome_colaborador || 'Colaborador')
+        .replace(/\s+/g, '_')
+        .replace(/[^a-zA-Z0-9_]/g, '')
+
+      // Definir novo título temporário
+      const novoTitulo = `${codigo}_${nomeColaborador}`
+      document.title = novoTitulo
+
+      // Executar impressão
       window.print()
+
+      // Restaurar título original após a impressão
+      // Usar evento afterprint se disponível, senão timeout
+      const restaurarTitulo = () => {
+        document.title = originalTitle
+      }
+
+      if ('onafterprint' in window) {
+        window.addEventListener('afterprint', restaurarTitulo, { once: true })
+      } else {
+        setTimeout(restaurarTitulo, 1000)
+      }
     }, 100)
   }
 
