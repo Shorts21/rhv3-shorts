@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Save, X, FileText, ChevronDown, ChevronUp, Check, XCircle, Edit2, Trash2, AlertCircle, MessageSquare, Printer } from 'lucide-react'
 import { AnimatedCard } from '../AnimatedCard'
-import { MovimentacaoRequisicaoPrint } from '../MovimentacaoRequisicaoPrint'
+import { PrintRequisicaoA4 } from '../PrintRequisicaoA4'
 import toast from 'react-hot-toast'
 import { supabase } from '../../lib/supabase'
 import { MovimentacaoRequisicaoPessoal, MOTIVOS_MOVIMENTACAO, UNIDADES } from '../../types'
@@ -365,7 +365,7 @@ export function MovimentacaoRequisicaoSection() {
   return (
     <div className="space-y-6">
       {selectedMovimentacao && (
-        <MovimentacaoRequisicaoPrint data={selectedMovimentacao} />
+        <PrintRequisicaoA4 data={selectedMovimentacao} />
       )}
       <div className="flex justify-between items-center">
         <div>
