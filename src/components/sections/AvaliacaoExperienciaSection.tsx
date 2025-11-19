@@ -156,35 +156,70 @@ export function AvaliacaoExperienciaSection({ userId, isRH = false }: AvaliacaoE
       }
 
       if (editingId) {
-        const { error } = await supabase
+        // Remove campos extras que não existem na tabela
+        const { id, colaborador, created_at, updated_at, ...updateData } = formData as any
+
+        const { data, error } = await supabase
           .from('avaliacoes_experiencia')
           .update({
-            ...formData,
+            ...updateData,
             avaliador_id: avaliadorColaboradorId,
             nota_final
           })
           .eq('id', editingId)
+          .select()
 
-        if (error) throw error
+        if (error) {
+          console.error('❌ Erro detalhado do Supabase:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          })
+          throw error
+        }
+
+        logger.info('✅ Avaliação atualizada:', data)
         toast.success('Avaliação atualizada com sucesso!')
       } else {
-        const { error } = await supabase
+        // Remove campos extras do formData para INSERT
+        const { id, colaborador, created_at, updated_at, ...insertData } = formData as any
+
+        const { data, error } = await supabase
           .from('avaliacoes_experiencia')
           .insert({
-            ...formData,
+            ...insertData,
             avaliador_id: avaliadorColaboradorId,
             nota_final
           })
+          .select()
 
-        if (error) throw error
+        if (error) {
+          console.error('❌ Erro detalhado do Supabase:', {
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          })
+          throw error
+        }
+
+        logger.info('✅ Avaliação criada:', data)
         toast.success('Avaliação registrada com sucesso!')
       }
 
       resetForm()
       loadAvaliacoes()
-    } catch (error) {
-      console.error('Erro ao salvar avaliação:', error)
-      toast.error('Erro ao salvar avaliação')
+    } catch (error: any) {
+      console.error('❌ Erro ao salvar avaliação:', error)
+      logger.error('Erro completo:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+        formData: formData
+      })
+      toast.error(`Erro ao salvar avaliação: ${error.message || 'Erro desconhecido'}`)
     } finally {
       setLoading(false)
     }
@@ -202,7 +237,9 @@ export function AvaliacaoExperienciaSection({ userId, isRH = false }: AvaliacaoE
   }
 
   const handleEdit = (avaliacao: AvaliacaoExperiencia) => {
-    setFormData(avaliacao)
+    // Remove campos extras do JOIN (colaborador aninhado)
+    const { colaborador, created_at, updated_at, ...avaliacaoData } = avaliacao as any
+    setFormData(avaliacaoData)
     setEditingId(avaliacao.id)
     setShowForm(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
