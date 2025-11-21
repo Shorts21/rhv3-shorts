@@ -6,6 +6,7 @@ import { useColaboradores, useCreateColaborador, useUpdateColaborador, useDelete
 import { useUnidades, useSetores } from '../../hooks/useOrganizationalData'
 import { LoadingSpinner } from '../LoadingSpinner'
 import { ColaboradorForm, Colaborador } from '../../types'
+import { formatDateForDB } from '../../lib/utils'
 import toast from 'react-hot-toast'
 
 interface ColaboradoresProps {
@@ -83,7 +84,7 @@ export function ColaboradoresSection({ isRH, supervisorId, supervisorName, onAva
       email: colaborador.email || '',
       setor: colaborador.setor,
       unidade: colaborador.unidade || '',
-      data_admissao: colaborador.data_admissao,
+      data_admissao: formatDateForDB(colaborador.data_admissao),
       status: colaborador.status
     })
     setEditingColaborador(colaborador)

@@ -1,16 +1,17 @@
 import { supabase } from '../lib/supabase'
-import { 
-  Colaborador, 
-  Avaliacao, 
-  Feedback, 
-  MovimentacaoPessoal, 
-  Cargo, 
+import {
+  Colaborador,
+  Avaliacao,
+  Feedback,
+  MovimentacaoPessoal,
+  Cargo,
   DashboardMetrics,
   ColaboradorForm,
   AvaliacaoForm,
   FeedbackForm
 } from '../types'
 import { logger } from '../lib/logger'
+import { formatDateForDB } from '../lib/utils'
 
 export class RHService {
   // ==================== COLABORADORES ====================
@@ -50,12 +51,13 @@ export class RHService {
         email: colaboradorData.email || null,
         setor: colaboradorData.setor,
         unidade: colaboradorData.unidade || null,
-        data_admissao: colaboradorData.data_admissao,
+        data_admissao: formatDateForDB(colaboradorData.data_admissao),
         status: colaboradorData.status || 'ativo',
         gestor_id: gestorId || null
       }
 
       logger.info('Inserting colaborador data:', insertData)
+      logger.info('✅ Data formatada para o banco:', insertData.data_admissao)
 
       const { data, error } = await supabase
         .from('colaboradores')
@@ -81,13 +83,16 @@ export class RHService {
     try {
       logger.info('Atualizando colaborador:', id, colaboradorData)
 
+      const dataFormatada = formatDateForDB(colaboradorData.data_admissao)
+      logger.info('✅ Data de admissão formatada:', dataFormatada)
+
       const { data, error } = await supabase
         .from('colaboradores')
         .update({
           nome: colaboradorData.nome,
           email: colaboradorData.email,
           setor: colaboradorData.setor,
-          data_admissao: colaboradorData.data_admissao,
+          data_admissao: dataFormatada,
           status: colaboradorData.status,
           foto_url: null,
           updated_at: new Date().toISOString()
