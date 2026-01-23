@@ -43,16 +43,16 @@ export function MovimentacaoRequisicaoSection() {
   }, [])
 
   useEffect(() => {
+    // Card de desligamento permanece exclusivo para 'Demissão'
     if (formData.motivo === 'Demissão') {
       setShowDesligamento(true)
-      setShowPromocao(false)
-    } else if (formData.motivo === 'Promoção') {
-      setShowPromocao(true)
-      setShowDesligamento(false)
     } else {
       setShowDesligamento(false)
-      setShowPromocao(false)
     }
+
+    // Card de promoção deve aparecer em TODOS os motivos
+    // (desde que algum motivo tenha sido selecionado)
+    setShowPromocao(!!formData.motivo)
   }, [formData.motivo])
 
   const loadMovimentacoes = async () => {
