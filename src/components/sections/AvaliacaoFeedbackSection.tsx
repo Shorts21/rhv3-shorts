@@ -37,6 +37,10 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
 
   const isBPRH = currentUser?.perfil === 'bp_rh'
 
+  const canEditOrDelete = (avaliacao: AvaliacaoDesempenhoFeedback): boolean => {
+    return isBPRH || avaliacao.avaliador_id === currentUser?.id
+  }
+
   useEffect(() => {
     loadColaboradores()
     loadAvaliacoes()
@@ -213,8 +217,12 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta avaliação?')) return
+  const handleDelete = async (id: string, nomeColaborador?: string) => {
+    const mensagem = nomeColaborador
+      ? `Tem certeza que deseja excluir a avaliação de ${nomeColaborador}? Esta ação não pode ser desfeita.`
+      : 'Tem certeza que deseja excluir esta avaliação? Esta ação não pode ser desfeita.'
+
+    if (!confirm(mensagem)) return
 
     try {
       const { error } = await supabase
@@ -451,9 +459,16 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
                   </div>
 
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-lg mb-2">
-                      {avaliacao.colaborador?.nome}
-                    </h3>
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="font-semibold text-gray-900 text-lg">
+                        {avaliacao.colaborador?.nome}
+                      </h3>
+                      {canEditOrDelete(avaliacao) && (
+                        <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                          {isBPRH ? 'Admin' : 'Seu feedback'}
+                        </span>
+                      )}
+                    </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-600 mb-3">
                       <div>
                         <span className="font-medium">Trimestre:</span> {avaliacao.trimestre}º
@@ -484,7 +499,7 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
                   </div>
                 </div>
 
-                {isBPRH && (
+                {canEditOrDelete(avaliacao) && (
                   <div className="flex gap-2 ml-4">
                     <button
                       onClick={() => handleEdit(avaliacao)}
@@ -494,7 +509,7 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
                       <Edit2 className="w-5 h-5" />
                     </button>
                     <button
-                      onClick={() => handleDelete(avaliacao.id)}
+                      onClick={() => handleDelete(avaliacao.id, avaliacao.colaborador?.nome)}
                       className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
                       title="Excluir"
                     >
