@@ -27,24 +27,23 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
   })
 
   useEffect(() => {
-    loadCurrentUser()
+    const initializeComponent = async () => {
+      const user = await authService.getCurrentUser()
+      setCurrentUser(user)
+    }
+    initializeComponent()
   }, [])
-
-  const loadCurrentUser = async () => {
-    const user = await authService.getCurrentUser()
-    setCurrentUser(user)
-  }
 
   const isBPRH = currentUser?.perfil === 'bp_rh'
 
-  const canEditOrDelete = (avaliacao: AvaliacaoDesempenhoFeedback): boolean => {
-    return isBPRH || avaliacao.avaliador_id === currentUser?.id
+  const canEditOrDelete = (avaliacao: any): boolean => {
+    return isBPRH || avaliacao.usuario_id === currentUser?.id
   }
 
   useEffect(() => {
     loadColaboradores()
     loadAvaliacoes()
-  }, [])
+  }, [currentUser])
 
   const loadColaboradores = async () => {
     try {
@@ -168,6 +167,7 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
           .update({
             ...formData,
             avaliador_id: avaliadorColaboradorId,
+            usuario_id: currentUser?.id,
             total_pontos,
             percentual_idi
           })
@@ -181,6 +181,7 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
           .insert({
             ...formData,
             avaliador_id: avaliadorColaboradorId,
+            usuario_id: currentUser?.id,
             total_pontos,
             percentual_idi
           })
@@ -450,6 +451,8 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
       <div className="grid gap-4">
         {avaliacoes.map((avaliacao) => {
           const classificacao = getClassificacao(avaliacao.percentual_idi || 0)
+          const canEdit = canEditOrDelete(avaliacao)
+          console.log('Feedback:', { id: avaliacao.id, usuario_id: avaliacao.usuario_id, currentUserId: currentUser?.id, canEdit })
           return (
             <AnimatedCard key={avaliacao.id} className="p-6">
               <div className="flex items-start justify-between">
@@ -463,7 +466,7 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
                       <h3 className="font-semibold text-gray-900 text-lg">
                         {avaliacao.colaborador?.nome}
                       </h3>
-                      {canEditOrDelete(avaliacao) && (
+                      {canEdit && (
                         <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
                           {isBPRH ? 'Admin' : 'Seu feedback'}
                         </span>
@@ -499,7 +502,7 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
                   </div>
                 </div>
 
-                {canEditOrDelete(avaliacao) && (
+                {canEdit && (
                   <div className="flex gap-2 ml-4">
                     <button
                       onClick={() => handleEdit(avaliacao)}
