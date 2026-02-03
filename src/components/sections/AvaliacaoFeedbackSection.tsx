@@ -37,9 +37,19 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
   const isBPRH = currentUser?.perfil === 'bp_rh'
 
   const canEditOrDelete = (avaliacao: any): boolean => {
-    // Usar auth.uid() do usuário logado
-    const userAuthId = currentUser?.id
-    return isBPRH || avaliacao.criado_por === userAuthId
+    if (isBPRH) return true
+
+    // Novo sistema: criado_por (auth.uid)
+    if (avaliacao.criado_por) {
+      return avaliacao.criado_por === currentUser?.id
+    }
+
+    // Sistema legado: usuario_id (users table id)
+    if (avaliacao.usuario_id) {
+      return avaliacao.usuario_id === currentUser?.id
+    }
+
+    return false
   }
 
   useEffect(() => {
@@ -169,6 +179,7 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
           .update({
             ...formData,
             avaliador_id: avaliadorColaboradorId,
+            usuario_id: currentUser?.id,
             criado_por: currentUser?.id,
             total_pontos,
             percentual_idi
@@ -183,6 +194,7 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
           .insert({
             ...formData,
             avaliador_id: avaliadorColaboradorId,
+            usuario_id: currentUser?.id,
             criado_por: currentUser?.id,
             total_pontos,
             percentual_idi
