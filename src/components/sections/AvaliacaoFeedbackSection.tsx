@@ -37,7 +37,9 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
   const isBPRH = currentUser?.perfil === 'bp_rh'
 
   const canEditOrDelete = (avaliacao: any): boolean => {
-    return isBPRH || avaliacao.usuario_id === currentUser?.id
+    // Usar auth.uid() do usuário logado
+    const userAuthId = currentUser?.id
+    return isBPRH || avaliacao.criado_por === userAuthId
   }
 
   useEffect(() => {
@@ -167,7 +169,7 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
           .update({
             ...formData,
             avaliador_id: avaliadorColaboradorId,
-            usuario_id: currentUser?.id,
+            criado_por: currentUser?.id,
             total_pontos,
             percentual_idi
           })
@@ -181,7 +183,7 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
           .insert({
             ...formData,
             avaliador_id: avaliadorColaboradorId,
-            usuario_id: currentUser?.id,
+            criado_por: currentUser?.id,
             total_pontos,
             percentual_idi
           })
@@ -452,7 +454,6 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
         {avaliacoes.map((avaliacao) => {
           const classificacao = getClassificacao(avaliacao.percentual_idi || 0)
           const canEdit = canEditOrDelete(avaliacao)
-          console.log('Feedback:', { id: avaliacao.id, usuario_id: avaliacao.usuario_id, currentUserId: currentUser?.id, canEdit })
           return (
             <AnimatedCard key={avaliacao.id} className="p-6">
               <div className="flex items-start justify-between">
