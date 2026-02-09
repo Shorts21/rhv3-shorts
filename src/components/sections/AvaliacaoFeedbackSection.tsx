@@ -163,6 +163,13 @@ export function AvaliacaoFeedbackSection({ userId }: AvaliacaoFeedbackSectionPro
       }
 
       if (editingId) {
+        const hasPermission = await feedbackPermissionService.canEditOrDelete(editingId, 'update')
+        if (!hasPermission) {
+          toast.error('Você não tem permissão para editar este feedback')
+          setLoading(false)
+          return
+        }
+
         const { error } = await supabase
           .from('avaliacoes_desempenho_feedback')
           .update({
